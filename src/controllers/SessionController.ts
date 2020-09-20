@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import UserRepository from '../repositories/UserRepositoriy';
+import UserRepository from '../repositories/UserRepository';
 import { getCustomRepository } from 'typeorm';
 import { compare } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';

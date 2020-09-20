@@ -1,15 +1,16 @@
 import {
   Entity,
-  PrimaryColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
+  PrimaryGeneratedColumn, ManyToMany, JoinTable
 } from 'typeorm';
+import Role from './Role';
 
 
 @Entity('users')
 class User {
-  @PrimaryColumn('uuid')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -27,6 +28,14 @@ class User {
   @UpdateDateColumn()
   updated_at: Date;
 
+  @ManyToMany(() => Role)
+  @JoinTable({
+    name: "users_roles",
+    joinColumns: [{ name: 'user_id' }],
+    inverseJoinColumns: [{ name: 'role_id' }]
+  })
+  roles: Role[]
+
 }
 
-export { User };
+export default User;
