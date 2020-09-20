@@ -1,38 +1,44 @@
-import { Request, Response } from 'express'
-import UserRepository from '../repositories/UserRepository';
-import { getCustomRepository } from 'typeorm';
-import { compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
+import { Request, Response } from "express";
+import { getCustomRepository } from "typeorm";
+import UserRepository from "../repositories/UserRepository";
+import { compare } from "bcryptjs";
+import { sign } from "jsonwebtoken";
 
 class SessionController {
-
   async create(request: Request, response: Response) {
-
     const { username, password } = request.body;
 
     const userRepository = getCustomRepository(UserRepository);
 
-    const user = await userRepository.findOne({ username });
+    const user = await userRepository.findOne(
+      { username },
+      { relations: ["roles"] }
+    );
 
     if (!user) {
-      return response.status(400).json({ message: "User not found" })
+      return response.status(400).json({ error: "User not found!" });
     }
 
-    const passwordMatched = await compare(password, user.password);
+    const matchPassword = await compare(password, user.password);
 
-    if (!passwordMatched) {
-      return response.status(400).json({ message: "username/password combination is wrong" });
+    if (!matchPassword) {
+      return response
+        .status(400)
+        .json({ error: "Incorrect password or username" });
     }
 
-    const token = sign({}, 'oifhqwvty@b@@!uy98yr182', {
+    const roles = user.roles.map((role) => role.name);
+
+    const token = sign({ roles }, "93eea6a2c12628b3a3b7618f6882c912", {
       subject: user.id,
-      expiresIn: '1d'
+      expiresIn: "1d",
     });
 
-    delete user.password
-
-    return response.json({ user, token })
+    return response.json({
+      token,
+      user,
+    });
   }
 }
 
-export default SessionController  
+export default SessionController;
